@@ -29,11 +29,7 @@
 (defmethod initialize-instance :after ((currency currency) &key)
   (let ((from (slot-value currency 'from))
         (to (slot-value currency 'to)))
-    (setf (slot-value currency 'ticker-name) (string-upcase (str "+" from "-" to "+")))))
-
-(defmethod initialize-instance :after ((currency currency) &key)
-  (let ((from (slot-value currency 'from))
-        (to (slot-value currency 'to)))
+    (setf (slot-value currency 'ticker-name) (string-upcase (str "+" from "-" to "+")))
     (setf (slot-value currency 'api-name) (string-upcase (str from "_" to)))))
 
 ;; Expects: Two strings in the format: XXX, XXX+
