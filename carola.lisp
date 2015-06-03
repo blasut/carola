@@ -27,6 +27,9 @@
     :reader url-name
     :documentation "The url name for the currency.")))
 
+(defun make-currency (name)
+  (make-instance 'currency :name name))
+
 (defmethod initialize-instance :after ((currency currency) &key)
   (setf (slot-value currency 'url-name) (string-upcase (name currency))))
 
@@ -50,6 +53,9 @@
     :reader url-name
     :documentation "The name used in the URL for requests."))
   (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
+
+(defun make-currency-pair (from to)
+  (make-instance 'currency-pair :from from :to to))
 
 (defmethod initialize-instance :after ((currency-pair currency-pair) &key)
   (let ((from (url-name (slot-value currency-pair 'from)))
