@@ -22,7 +22,15 @@
     :initarg :name
     :initform (error "Must supply a value for :name")
     :reader name
-    :documentation "The name of the currency.")))
+    :documentation "The name of the currency.")
+   (url-name
+    :reader url-name
+    :documentation "The url name for the currency.")))
+
+(defmethod initialize-instance :after ((currency currency) &key)
+  (setf (slot-value currency 'url-name) (string-upcase (name currency))))
+
+
 
 (defclass currency-pair ()
   ((from
@@ -42,10 +50,10 @@
   (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
 
 (defmethod initialize-instance :after ((currency-pair currency-pair) &key)
-  (let ((from (name (slot-value currency-pair 'from)))
-        (to (name (slot-value currency-pair 'to))))
-    (setf (slot-value currency-pair 'api-name) (string-upcase (str "+" from "-" to "+")))
-    (setf (slot-value currency-pair 'url-name) (string-upcase (str from "_" to)))))
+  (let ((from (url-name (slot-value currency-pair 'from)))
+        (to (url-name (slot-value currency-pair 'to))))
+    (setf (slot-value currency-pair 'api-name) (str "+" from "-" to "+"))
+    (setf (slot-value currency-pair 'url-name) (str from "_" to))))
 
 (defgeneric get-latest-ticker (currency-pair))
 (defgeneric get-trade-history (currency-pair))
@@ -62,3 +70,5 @@
 (defmethod get-trade-history ((currency-pair currency-pair))
   (with-slots (url-name) currency-pair
     (make-request (str "returnTradeHistory&currencyPair=" url-name))))
+
+
