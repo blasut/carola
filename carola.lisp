@@ -44,10 +44,10 @@
     :initform (error "Must supply a value for :to")
     :documentation "The currency to count to.")
    (api-name
-    :accessor api-name
+    :reader api-name
     :documentation "The name returned from the API.")
    (url-name
-    :accessor url-name
+    :reader url-name
     :documentation "The name used in the URL for requests."))
   (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
 
