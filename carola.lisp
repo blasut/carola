@@ -17,6 +17,25 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
+;; A currency always have a from and to currency, for example. BTC to XMR. Can't be standalone.
+(defclass currency ()
+  ((from
+    :initarg :from)
+   (to
+    :initarg :to)
+   ticker-name
+   api-name))
+
+(defmethod initialize-instance :after ((currency currency) &key)
+  (let ((from (slot-value currency 'from))
+        (to (slot-value currency 'to)))
+    (setf (slot-value currency 'ticker-name) (string-upcase (str "+" from "-" to "+")))))
+
+(defmethod initialize-instance :after ((currency currency) &key)
+  (let ((from (slot-value currency 'from))
+        (to (slot-value currency 'to)))
+    (setf (slot-value currency 'api-name) (string-upcase (str from "_" to)))))
+
 ;; Expects: Two strings in the format: XXX, XXX+
 ;;          Both strings should be 3 or more characters long.
 ;; Example: BTC, LTC
