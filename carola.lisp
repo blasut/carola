@@ -18,18 +18,20 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
-;; A currency always have a from and to currency, for example. BTC to XMR. Can't be standalone.
 (defclass currency ()
   ((from
-    :initarg :from)
+    :initarg :from
+    :documentation "The currency to count from.")
    (to
-    :initarg :to)
+    :initarg :to
+    :documentation "The currency to count to.")
    (api-name
     :accessor api-name
     :documentation "The name returned from the API.")
    (url-name
     :accessor url-name
-    :documentation "The name used in the URL for requests.")))
+    :documentation "The name used in the URL for requests."))
+  (:documentation "This class describes a currency for the exchange. A currency always have a from and to currency, for example. BTC to XMR."))
 
 (defmethod initialize-instance :after ((currency currency) &key)
   (let ((from (slot-value currency 'from))
