@@ -30,7 +30,9 @@
 (defmethod initialize-instance :after ((currency currency) &key)
   (setf (slot-value currency 'url-name) (string-upcase (name currency))))
 
-
+(defmethod loan-orders ((currency currency))
+  (with-slots (name) currency
+    (make-request (str "returnLoanOrders&currency=" (url-name currency)))))
 
 (defclass currency-pair ()
   ((from
