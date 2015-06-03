@@ -41,9 +41,6 @@
   (with-slots (api-name) currency
     (remove-if-not #'(lambda (x) (string= (string (first x)) api-name)) (make-request "returnTicker"))))
 
-(defun get-order-book-for-currency (from to)
-  (let* ((currency-name (string-upcase (str from "_" to)))
-         (ticker (str *command-url* "returnOrderBook&currencyPair=" currency-name "&depth=50"))
-           (stream (drakma:http-request ticker :want-stream t)))
-      (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
-      (json:decode-json stream)))
+(defmethod get-order-book ((currency currency))
+  (with-slots (url-name) currency
+    (make-request (str "returnOrderBook&currencyPair=" url-name "&depth=50"))))
