@@ -10,10 +10,9 @@
 
 (setf drakma:*header-stream* *standard-output*)
 
-(defparameter *command-url* "https://poloniex.com/public?command=")
-
 (defun make-request (action)
-  (let* ((ticker (str *command-url* action))
+  (let* ((command-url "https://poloniex.com/public?command=")
+         (ticker (str command-url action))
         (stream (drakma:http-request ticker :want-stream t)))
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
