@@ -17,6 +17,13 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
+(defclass currency ()
+  ((name
+    :initarg :name
+    :initform (error "Must supply a value for :name")
+    :reader name
+    :documentation "The name of the currency.")))
+
 (defclass currency-pair ()
   ((from
     :initarg :from
@@ -35,15 +42,14 @@
   (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
 
 (defmethod initialize-instance :after ((currency-pair currency-pair) &key)
-  (let ((from (slot-value currency-pair 'from))
-        (to (slot-value currency-pair 'to)))
+  (let ((from (name (slot-value currency-pair 'from)))
+        (to (name (slot-value currency-pair 'to))))
     (setf (slot-value currency-pair 'api-name) (string-upcase (str "+" from "-" to "+")))
     (setf (slot-value currency-pair 'url-name) (string-upcase (str from "_" to)))))
 
 (defgeneric get-latest-ticker (currency-pair))
 (defgeneric get-trade-history (currency-pair))
 (defgeneric get-order-book (currency-pair))
-
 
 (defmethod get-latest-ticker ((currency-pair currency-pair))
   (with-slots (api-name) currency-pair
