@@ -48,3 +48,7 @@
 (defmethod get-order-book ((currency currency))
   (with-slots (url-name) currency
     (make-request (str "returnOrderBook&currencyPair=" url-name "&depth=50"))))
+
+(defmethod get-trade-history ((currency currency))
+  (with-slots (url-name) currency
+    (make-request (str "returnTradeHistory&currencyPair=" url-name))))
