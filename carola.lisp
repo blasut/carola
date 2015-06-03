@@ -3,6 +3,7 @@
 (in-package #:carola)
 
 (ql:quickload 'drakma)
+(ql:quickload 'cl-json)
 
 (defmacro str (&rest body)
   `(concatenate 'string ,@body))
@@ -11,8 +12,8 @@
 
 (defparameter *command-url* "https://poloniex.com/public?command=")
 
-(defun get-latest-ticker ()
-  (let* ((ticker (str *command-url* "returnTicker"))
+(defun make-request (action)
+  (let* ((ticker (str *command-url* action))
         (stream (drakma:http-request ticker :want-stream t)))
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
@@ -23,22 +24,22 @@
     :initarg :from)
    (to
     :initarg :to)
-   ticker-name
-   api-name))
+   (api-name
+    :accessor api-name
+    :documentation "The name returned from the API.")
+   (url-name
+    :accessor url-name
+    :documentation "The name used in the URL for requests.")))
 
 (defmethod initialize-instance :after ((currency currency) &key)
   (let ((from (slot-value currency 'from))
         (to (slot-value currency 'to)))
-    (setf (slot-value currency 'ticker-name) (string-upcase (str "+" from "-" to "+")))
-    (setf (slot-value currency 'api-name) (string-upcase (str from "_" to)))))
+    (setf (slot-value currency 'api-name) (string-upcase (str "+" from "-" to "+")))
+    (setf (slot-value currency 'url-name) (string-upcase (str from "_" to)))))
 
-;; Expects: Two strings in the format: XXX, XXX+
-;;          Both strings should be 3 or more characters long.
-;; Example: BTC, LTC
-(defun get-latest-ticker-for-currency (from to)
-  (let ((currency-name (string-upcase (str "+" from "-" to "+")))
-        (ticker (get-latest-ticker)))
-    (remove-if-not #'(lambda (x) (string= (string (first x)) currency-name)) ticker)))
+(defmethod get-latest-ticker ((currency currency))
+  (with-slots (api-name) currency
+    (remove-if-not #'(lambda (x) (string= (string (first x)) api-name)) (make-request "returnTicker"))))
 
 (defun get-order-book-for-currency (from to)
   (let* ((currency-name (string-upcase (str from "_" to)))
