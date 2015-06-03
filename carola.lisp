@@ -37,6 +37,16 @@
   (with-slots (name) currency
     (make-request (str "returnLoanOrders&currency=" (url-name currency)))))
 
+;; implement for a single currency:
+; createLoanOffer
+; cancelLoanOffer
+; returnOpenLoanOffers
+; returnActiveLoans
+; toggleAutoRenew
+; 
+
+
+
 (defclass currency-pair ()
   ((from
     :initarg :from
@@ -78,5 +88,13 @@
 (defmethod get-trade-history ((currency-pair currency-pair))
   (with-slots (url-name) currency-pair
     (make-request (str "returnTradeHistory&currencyPair=" url-name))))
+
+
+;;; Strategy
+; Different loan strategies:
+;
+; - Look for the lowest loan right now and put a new loan under that rate.
+; - Look at the five lowest rate loans and put a new loan in a "sensible" place.
+; - Decide a monthly precentage of increase that is the minimum and put in loan(s) that completes that.
 
 
