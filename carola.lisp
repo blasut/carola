@@ -21,9 +21,11 @@
 (defclass currency ()
   ((from
     :initarg :from
+    :initform (error "Must supply a value for :from")
     :documentation "The currency to count from.")
    (to
     :initarg :to
+    :initform (error "Must supply a value for :to")
     :documentation "The currency to count to.")
    (api-name
     :accessor api-name
