@@ -1,11 +1,14 @@
 ;;;; carola.asd
 
 (asdf:defsystem #:carola
-  :description "Describe carola here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "For accessing the Poloniex API."
+  :author "Blasut"
+  :license "See license document."
   :depends-on (#:drakma
-               #:cl-json)
+               #:cl-json
+               #:ironclad
+               #:local-time
+               #:osicat)
   :serial t
   :components ((:file "package")
                (:file "carola")))

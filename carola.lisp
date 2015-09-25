@@ -2,12 +2,6 @@
 
 (in-package #:carola)
 
-(ql:quickload 'drakma)
-(ql:quickload 'cl-json)
-(ql:quickload 'ironclad)
-(ql:quickload 'local-time)
-(ql:quickload 'osicat)
-
 ;; Use the unexported symbol, used for signing the request.
 (export (find-symbol "ALIST-TO-URL-ENCODED-STRING" 'drakma) 'drakma)
 
