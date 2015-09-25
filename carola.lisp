@@ -104,10 +104,6 @@
     (setf (slot-value currency-pair 'api-name) (str "+" from "-" to "+"))
     (setf (slot-value currency-pair 'url-name) (str from "_" to))))
 
-(defgeneric get-latest-ticker (currency-pair))
-(defgeneric get-trade-history (currency-pair))
-(defgeneric get-order-book (currency-pair))
-
 (defmethod get-latest-ticker ((currency-pair currency-pair))
   (with-slots (api-name) currency-pair
     (remove-if-not #'(lambda (x) (string= (string (first x)) api-name)) (make-request "returnTicker"))))
