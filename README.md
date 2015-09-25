@@ -4,7 +4,7 @@ Bästa appen
 
 ## Usage
 
-``
+```
 (ql:quickload 'osicat)
 
 (setf (osicat:environment-variable "api_key") your_key_here)
