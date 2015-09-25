@@ -4,6 +4,12 @@
 
 (ql:quickload 'drakma)
 (ql:quickload 'cl-json)
+(ql:quickload 'ironclad)
+(ql:quickload 'local-time)
+(ql:quickload 'osicat)
+
+;; Use the unexported symbol, used for signing the request.
+(export (find-symbol "ALIST-TO-URL-ENCODED-STRING" 'drakma) 'drakma)
 
 (defmacro str (&rest body)
   `(concatenate 'string ,@body))
@@ -16,6 +22,36 @@
         (stream (drakma:http-request ticker :want-stream t)))
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
+
+(defun secret ()
+  (osicat:environment-variable "api_secret"))
+
+(defun api-key ()
+  (osicat:environment-variable "api_key"))
+
+(defun sign-request (params)
+  (let* ((params (drakma:alist-to-url-encoded-string params :ascii 'drakma:url-encode))
+         (hmac (ironclad:make-hmac (ironclad:ascii-string-to-byte-array (secret)) :sha512)))
+    (ironclad:update-hmac hmac (ironclad:ascii-string-to-byte-array params))
+    (ironclad:hmac-digest hmac)))
+
+(defun generate-nonce ()
+  (write-to-string (local-time:timestamp-to-unix (local-time:now))))
+
+(defun make-post (command)
+  (let* ((command-url "https://poloniex.com/tradingApi")
+         (params (pairlis '("command" "nonce") (list command (generate-nonce))))
+         (sign (ironclad:byte-array-to-hex-string (sign-request params)))
+         (stream (drakma:http-request command-url
+                                      :want-stream t
+                                      :method :post
+                                      :parameters params
+                                      :additional-headers (pairlis '("Sign" "Key") (list sign (api-key))))))
+    (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
+    (json:decode-json stream)))
+
+(defun get-balances ()
+  (make-post "returnBalances"))
 
 (defclass currency ()
   ((name
@@ -33,9 +69,10 @@
 (defmethod initialize-instance :after ((currency currency) &key)
   (setf (slot-value currency 'url-name) (string-upcase (name currency))))
 
-(defmethod loan-orders ((currency currency))
+(defmethod get-loan-orders ((currency currency))
   (with-slots (name) currency
     (make-request (str "returnLoanOrders&currency=" (url-name currency)))))
+
 
 ;; implement for a single currency:
 ; createLoanOffer
@@ -43,7 +80,7 @@
 ; returnOpenLoanOffers
 ; returnActiveLoans
 ; toggleAutoRenew
-; 
+; returnLoanOrders
 
 
 
@@ -88,6 +125,10 @@
 (defmethod get-trade-history ((currency-pair currency-pair))
   (with-slots (url-name) currency-pair
     (make-request (str "returnTradeHistory&currencyPair=" url-name))))
+
+
+
+
 
 
 ;;; Strategy
