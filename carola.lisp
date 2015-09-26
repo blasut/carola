@@ -120,6 +120,9 @@
   :documentation "Toggles the autoRenew setting on an active loan."
   (make-post "toggleAutoRenew" (list (list "orderNumber" loan-number))))
 
+(defun make-url-name (name)
+  (string-upcase name))
+
 (defclass currency ()
   ((name
     :initarg :name
@@ -134,7 +137,7 @@
   (make-instance 'currency :name name))
 
 (defmethod initialize-instance :after ((currency currency) &key)
-  (setf (slot-value currency 'url-name) (string-upcase (name currency))))
+  (setf (slot-value currency 'url-name) (make-url-name (name currency))))
 
 (defmethod get-loan-orders ((currency currency))
   :documentation "Returns the list of loan offers and demands for a given currency."
@@ -180,8 +183,8 @@
   (make-instance 'currency-pair :from from :to to))
 
 (defmethod initialize-instance :after ((currency-pair currency-pair) &key)
-  (let ((from (url-name (slot-value currency-pair 'from)))
-        (to (url-name (slot-value currency-pair 'to))))
+  (let ((from (make-url-name (slot-value currency-pair 'from)))
+        (to   (make-url-name (slot-value currency-pair 'to))))
     (setf (slot-value currency-pair 'api-name) (str "+" from "-" to "+"))
     (setf (slot-value currency-pair 'url-name) (str from "_" to))))
 
