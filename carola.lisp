@@ -48,8 +48,75 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
+(defun get-all-order-books ()
+  :documentation "Returns the order book for all markets."
+  (make-request (str "returnOrderBook&depth=50")))
+
 (defun get-balances ()
+  :documentation "Returns all of your available balances."
   (make-post "returnBalances"))
+
+(defun get-complete-balances ()
+  :documentation "Returns all of your balances, including available balance, balance on orders, and the estimated BTC value of your balance."
+  (make-post "returnCompleteBalances"))
+
+(defun get-deposit-addresses ()
+  :documentation "Returns all of your deposit addresses."
+  (make-post "returnDepositAddresses"))
+
+(defun get-deposit-and-withdrawals (&key start end)
+  :documentation "Returns your deposit and withdrawal history within a range, both of which should be given as UNIX timestamps."
+  (make-post "returnDepositsWithdrawals" (list (list "start" start)
+                                               (list "end" end))))
+
+(defun get-all-open-orders ()
+  :documentation "Returns your open orders for all markets."
+  (make-post "returnOpenOrders" '(("currencyPair" "all"))))
+
+(defun get-all-trade-histories (&optional start end)
+  :documentation "Returns your trade history for all markets. You may optionally specify a range via 'start' or 'end' given in UNIX timestamp format."
+  (make-post "returnTradeHistory" '(("currencyPair" "all"))))
+
+(defun cancel-order (order-number)
+  :documentation "Cancels an order you have placed in a given market."
+  (make-post "cancelOrder" (list (list "orderNumber" order-number))))
+
+(defun move-order (order-number new-rate &optional amount)
+  :documentation "Cancels an order and places a new one of the same type in a single atomic transaction, meaning either both operations will succeed or both will fail. You may optionally specify 'amount' if you wish to change the amount of the new order."
+  (make-post "moveOrder" (list (list "orderNumber" order-number)
+                               (list "newRate" new-rate))))
+
+(defun get-available-account-balances (&optional account)
+  :documentation "Returns your balances sorted by account. You may optionally specify the 'account' parameter if you wish to fetch only the balances of one account. Please note that balances in your margin account may not be accessible if you have any open margin positions or orders."
+  (make-post "returnAvailableAccountBalances"))
+
+(defun get-tradable-balances ()
+  :documentation "Returns your current tradable balances for each currency in each market for which margin trading is enabled. Please note that these balances may vary continually with market conditions."
+  (make-post "returnTradableBalances"))
+
+(defun get-margin-account-summary ()
+  :documentation "Returns a summary of your entire margin account. This is the same information you will find in the Margin Account section of the Margin Trading page, under the Markets list."
+  (make-post "returnMarginAccountSummary"))
+
+(defun get-margin-positions ()
+  :documentation "Returns information about your margin position in all markets. If you have no margin position in a market, 'type' will be set to 'none'. 'liquidationPrice' is an estimate, and does not necessarily represent the price at which an actual forced liquidation will occur. If you have no liquidation price, the value will be -1."
+  (make-post "getMarginPosition" '(("currencyPair" "all"))))
+
+(defun cancel-loan-order (loan-number)
+  :documentation "Cancels a loan offer."
+  (make-post "cancelLoanOffer" (list (list "orderNumber" loan-number))))
+
+(defun get-open-loan-orders ()
+  :documentation "Returns your open loan offers for each currency."
+  (make-post "returnOpenLoanOffers"))
+
+(defun get-active-loans ()
+  :documentation "Returns your active loans for each currency."
+  (make-post "returnActiveLoans"))
+
+(defun toggle-auto-renew (loan-number)
+  :documentation "Toggles the autoRenew setting on an active loan."
+  (make-post "toggleAutoRenew" (list (list "orderNumber" loan-number))))
 
 (defclass currency ()
   ((name
@@ -68,19 +135,22 @@
   (setf (slot-value currency 'url-name) (string-upcase (name currency))))
 
 (defmethod get-loan-orders ((currency currency))
+  :documentation "Returns the list of loan offers and demands for a given currency."
   (with-slots (name) currency
     (make-request (str "returnLoanOrders&currency=" (url-name currency)))))
 
+;; TODO: Implement different withdraw method for XMR only. 
+(defmethod withdraw ((currency currency))
+  :documentation "Immediately places a withdrawal for a given currency, with no email confirmation. In order to use this method, the withdrawal privilege must be enabled for your API key. For XMR withdrawals, you may optionally specify 'paymentId'.")
 
-;; implement for a single currency:
-; createLoanOffer
-; cancelLoanOffer
-; returnOpenLoanOffers
-; returnActiveLoans
-; toggleAutoRenew
-; returnLoanOrders
+(defmethod transfer ((currency currency) &key amount from-account to-account)
+  :documentation "Transfers funds from one account to another (e.g. from your exchange account to your margin account).")
 
+(defmethod create-loan-offer ((currency currency) &key amount duration auto-renew lending-rate)
+  :documentation "Creates a loan offer for a given currency.")
 
+(defmethod generate-new-address ((currency currency))
+  :documentation "Generates a new deposit address for the currency. Addresses for some currencies do not generate immediately. All currencies added in the future will return addresses immediately. The ones that currently don't are being changed over to the new system.")
 
 (defclass currency-pair ()
   ((from
@@ -109,13 +179,40 @@
     (setf (slot-value currency-pair 'url-name) (str from "_" to))))
 
 (defmethod get-latest-ticker ((currency-pair currency-pair))
+  :documentation "Returns the ticker for the currency pair."
   (with-slots (api-name) currency-pair
     (remove-if-not #'(lambda (x) (string= (string (first x)) api-name)) (make-request "returnTicker"))))
 
 (defmethod get-order-book ((currency-pair currency-pair))
+  :documentation "Returns the order book for a given market."
   (with-slots (url-name) currency-pair
     (make-request (str "returnOrderBook&currencyPair=" url-name "&depth=50"))))
 
-(defmethod get-trade-history ((currency-pair currency-pair))
+(defmethod get-trade-history ((currency-pair currency-pair) &optional start end)
+  :documentation "Returns the past 200 trades for a given market, or all of the trades between a range specified in UNIX timestamps by the 'start' and 'end' parameters"
   (with-slots (url-name) currency-pair
     (make-request (str "returnTradeHistory&currencyPair=" url-name))))
+
+(defmethod get-open-orders ((currency-pair currency-pair))
+  :documentation "Returns your open orders for a given market.")
+
+(defmethod buy ((currency-pair currency-pair) &key rate amount)
+  :documentation "Places a buy order in a given market")
+
+(defmethod sell ((currency-pair currency-pair))
+  :documentation "Places a sell order in a given market." &key rate amount)
+
+(defmethod margin-buy ((currency-pair currency-pair) &key rate amount &optional lending-rate)
+  :documentation "Places a margin buy order in a given market. Required  parameters are  'rate', and 'amount'. You may optionally specify a maximum lending rate using the 'lending-rate'. If successful, the method will return the order number and any trades immediately resulting from your order.")
+
+(defmethod margin-sell ((currency-pair currency-pair) &key rate amount)
+  :documentation "Places a margin buy order in a given market. Required  parameters are  'rate', and 'amount'. If successful, the method will return the order number and any trades immediately resulting from your order.")
+
+(defmethod get-margin-position ((currency-pair currency-pair))
+  :documentation "Returns information about your margin position in the market. If you have no margin position in the market, 'type' will be set to 'none'. 'liquidationPrice' is an estimate, and does not necessarily represent the price at which an actual forced liquidation will occur. If you have no liquidation price, the value will be -1.")
+
+(defmethod close-margin-position ((currency-pair currency-pair))
+  :documentation "Closes your margin position in a given market. This call will also return success if you do not have an open position in the specified market.")
+
+
+
