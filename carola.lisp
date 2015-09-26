@@ -144,7 +144,11 @@
   :documentation "Immediately places a withdrawal for a given currency, with no email confirmation. In order to use this method, the withdrawal privilege must be enabled for your API key. For XMR withdrawals, you may optionally specify 'paymentId'.")
 
 (defmethod transfer ((currency currency) &key amount from-account to-account)
-  :documentation "Transfers funds from one account to another (e.g. from your exchange account to your margin account).")
+  :documentation "Transfers funds from one account to another (e.g. from your exchange account to your margin account)."
+  (make-post "transferBalance" (list (list "currency" (slot-value currency 'name))
+                                     (list "amount" amount)
+                                     (list "fromAccount" from-account)
+                                     (list "toAccount" to-account))))
 
 (defmethod create-loan-offer ((currency currency) &key amount duration auto-renew lending-rate)
   :documentation "Creates a loan offer for a given currency.")
