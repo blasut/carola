@@ -1,6 +1,6 @@
 # Carola
 
-Bästa appen
+To connect to poloniex API.
 
 ## Usage
 
@@ -15,5 +15,11 @@ Bästa appen
 (ql:quickload :carola)
 
 ```
+
+## TODO
+
+- Implement the rest of the methods.
+- Implement optional arguments.
+- Generate documentation from code.
 
 ![Carola](http://i.ytimg.com/vi/Jbuczj_elfM/maxresdefault.jpg)
