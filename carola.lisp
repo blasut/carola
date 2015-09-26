@@ -32,9 +32,13 @@
 (defun generate-nonce ()
   (write-to-string (local-time:timestamp-to-unix (local-time:now))))
 
-(defun make-post (command)
+(defun construct-params (params)
+  (loop for param in params collect (cons (first param) (second param))))
+
+(defun make-post (command &optional (params '()))
   (let* ((command-url "https://poloniex.com/tradingApi")
-         (params (pairlis '("command" "nonce") (list command (generate-nonce))))
+         (defaults (list (list "command" command) (list "nonce" (generate-nonce))))
+         (params (construct-params (append params defaults)))
          (sign (ironclad:byte-array-to-hex-string (sign-request params)))
          (stream (drakma:http-request command-url
                                       :want-stream t
