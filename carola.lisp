@@ -204,7 +204,8 @@
     (make-request (str "returnTradeHistory&currencyPair=" url-name))))
 
 (defmethod get-open-orders ((currency-pair currency-pair))
-  :documentation "Returns your open orders for a given market.")
+  :documentation "Returns your open orders for a given market."
+  (make-post "returnOpenOrders" (list (list "currencyPair" (slot-value currency-pair 'url-name)))))
 
 (defmethod buy ((currency-pair currency-pair) &key rate amount)
   :documentation "Places a buy order in a given market")
