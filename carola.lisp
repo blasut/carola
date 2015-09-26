@@ -179,7 +179,7 @@
     :documentation "The name used in the URL for requests."))
   (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
 
-(defun make-currency-pair (from to)
+(defun make-currency-pair (&key from to)
   (make-instance 'currency-pair :from from :to to))
 
 (defmethod initialize-instance :after ((currency-pair currency-pair) &key)
