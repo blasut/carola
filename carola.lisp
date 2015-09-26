@@ -156,7 +156,8 @@
   :documentation "Creates a loan offer for a given currency.")
 
 (defmethod generate-new-address ((currency currency))
-  :documentation "Generates a new deposit address for the currency. Addresses for some currencies do not generate immediately. All currencies added in the future will return addresses immediately. The ones that currently don't are being changed over to the new system.")
+  :documentation "Generates a new deposit address for the currency. Addresses for some currencies do not generate immediately. All currencies added in the future will return addresses immediately. The ones that currently don't are being changed over to the new system."
+  (make-post "generateNewAddress" (list (list "currency" (slot-value currency 'name)))))
 
 (defclass currency-pair ()
   ((from
