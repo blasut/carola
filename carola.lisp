@@ -26,6 +26,7 @@
 (defun sign-request (params)
   (let* ((params (drakma:alist-to-url-encoded-string params :ascii 'drakma:url-encode))
          (hmac (ironclad:make-hmac (ironclad:ascii-string-to-byte-array (secret)) :sha512)))
+    (format *standard-output* "~S" params)
     (ironclad:update-hmac hmac (ironclad:ascii-string-to-byte-array params))
     (ironclad:hmac-digest hmac)))
 
@@ -45,6 +46,7 @@
                                       :method :post
                                       :parameters params
                                       :additional-headers (pairlis '("Sign" "Key") (list sign (api-key))))))
+    (format *standard-output* "~S" params)
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
