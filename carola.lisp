@@ -50,6 +50,57 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
+;; Classes
+
+(defun make-url-name (name)
+  (string-upcase name))
+
+(defclass currency ()
+  ((name
+    :initarg :name
+    :initform (error "Must supply a value for :name")
+    :reader name
+    :documentation "The name of the currency.")
+   (url-name
+    :reader url-name
+    :documentation "The url name for the currency.")))
+
+(defun make-currency (name)
+  (make-instance 'currency :name name))
+
+(defmethod initialize-instance :after ((currency currency) &key)
+  (setf (slot-value currency 'url-name) (make-url-name (name currency))))
+
+(defclass currency-pair ()
+  ((from
+    :initarg :from
+    :initform (error "Must supply a value for :from")
+    :documentation "The currency to count from.")
+   (to
+    :initarg :to
+    :initform (error "Must supply a value for :to")
+    :documentation "The currency to count to.")
+   (api-name
+    :reader api-name
+    :documentation "The name returned from the API.")
+   (url-name
+    :reader url-name
+    :documentation "The name used in the URL for requests."))
+  (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
+
+(defun make-currency-pair (&key from to)
+  (make-instance 'currency-pair :from from :to to))
+
+(defmethod initialize-instance :after ((currency-pair currency-pair) &key)
+  (let ((from (make-url-name (slot-value currency-pair 'from)))
+        (to   (make-url-name (slot-value currency-pair 'to))))
+    (setf (slot-value currency-pair 'api-name) (str "+" from "-" to "+"))
+    (setf (slot-value currency-pair 'url-name) (str from "_" to))))
+
+
+;; Functions
+
+
 (defun get-all-order-books ()
   :documentation "Returns the order book for all markets."
   (make-request (str "returnOrderBook&depth=50")))
@@ -120,25 +171,6 @@
   :documentation "Toggles the autoRenew setting on an active loan."
   (make-post "toggleAutoRenew" (list (list "orderNumber" loan-number))))
 
-(defun make-url-name (name)
-  (string-upcase name))
-
-(defclass currency ()
-  ((name
-    :initarg :name
-    :initform (error "Must supply a value for :name")
-    :reader name
-    :documentation "The name of the currency.")
-   (url-name
-    :reader url-name
-    :documentation "The url name for the currency.")))
-
-(defun make-currency (name)
-  (make-instance 'currency :name name))
-
-(defmethod initialize-instance :after ((currency currency) &key)
-  (setf (slot-value currency 'url-name) (make-url-name (name currency))))
-
 (defmethod get-loan-orders ((currency currency))
   :documentation "Returns the list of loan offers and demands for a given currency."
   (with-slots (name) currency
@@ -166,32 +198,6 @@
 (defmethod generate-new-address ((currency currency))
   :documentation "Generates a new deposit address for the currency. Addresses for some currencies do not generate immediately. All currencies added in the future will return addresses immediately. The ones that currently don't are being changed over to the new system."
   (make-post "generateNewAddress" (list (list "currency" (slot-value currency 'name)))))
-
-(defclass currency-pair ()
-  ((from
-    :initarg :from
-    :initform (error "Must supply a value for :from")
-    :documentation "The currency to count from.")
-   (to
-    :initarg :to
-    :initform (error "Must supply a value for :to")
-    :documentation "The currency to count to.")
-   (api-name
-    :reader api-name
-    :documentation "The name returned from the API.")
-   (url-name
-    :reader url-name
-    :documentation "The name used in the URL for requests."))
-  (:documentation "This class describes a currency-pair for the exchange. A currency-pair always have a from and to currency, for example. BTC to XMR."))
-
-(defun make-currency-pair (&key from to)
-  (make-instance 'currency-pair :from from :to to))
-
-(defmethod initialize-instance :after ((currency-pair currency-pair) &key)
-  (let ((from (make-url-name (slot-value currency-pair 'from)))
-        (to   (make-url-name (slot-value currency-pair 'to))))
-    (setf (slot-value currency-pair 'api-name) (str "+" from "-" to "+"))
-    (setf (slot-value currency-pair 'url-name) (str from "_" to))))
 
 (defmethod get-latest-ticker ((currency-pair currency-pair))
   :documentation "Returns the ticker for the currency pair."
