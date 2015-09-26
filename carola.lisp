@@ -156,7 +156,12 @@
                                      (list "toAccount" to-account))))
 
 (defmethod create-loan-offer ((currency currency) &key amount duration auto-renew lending-rate)
-  :documentation "Creates a loan offer for a given currency.")
+  :documentation "Creates a loan offer for a given currency. Only 6 decimals or the API gives an error."
+  (make-post "createLoanOffer" (list (list "currency" (slot-value currency 'name))
+                                     (list "amount" amount)
+                                     (list "duration" duration)
+                                     (list "autoRenew" auto-renew)
+                                     (list "lendingRate" lending-rate))))
 
 (defmethod generate-new-address ((currency currency))
   :documentation "Generates a new deposit address for the currency. Addresses for some currencies do not generate immediately. All currencies added in the future will return addresses immediately. The ones that currently don't are being changed over to the new system."
