@@ -224,7 +224,7 @@
 (defmethod sell ((currency-pair currency-pair) &key rate amount)
   :documentation "Places a sell order in a given market.")
 
-(defmethod margin-buy ((currency-pair currency-pair) &key rate amount &optional lending-rate)
+(defmethod margin-buy ((currency-pair currency-pair) &key rate amount)
   :documentation "Places a margin buy order in a given market. Required  parameters are  'rate', and 'amount'. You may optionally specify a maximum lending rate using the 'lending-rate'. If successful, the method will return the order number and any trades immediately resulting from your order.")
 
 (defmethod margin-sell ((currency-pair currency-pair) &key rate amount)
