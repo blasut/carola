@@ -35,3 +35,6 @@
            :margin-sell
            :get-margin-position
            :close-margin-position))
+
+;; Use the unexported symbol, used for signing the request.
+(export (find-symbol "ALIST-TO-URL-ENCODED-STRING" 'drakma) 'drakma)

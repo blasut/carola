@@ -2,9 +2,6 @@
 
 (in-package #:carola)
 
-;; Use the unexported symbol, used for signing the request.
-(export (find-symbol "ALIST-TO-URL-ENCODED-STRING" 'drakma) 'drakma)
-
 (defmacro str (&rest body)
   `(concatenate 'string ,@body))
 
