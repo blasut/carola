@@ -7,8 +7,8 @@ To connect to poloniex API.
 ```common-lisp
 (ql:quickload 'osicat)
 
-(setf (osicat:environment-variable "api_key") your_key_here)
-(setf (osicat:environment-variable "api_secret") your_secret_here)
+(carola:set-api-key your_key_here)
+(carola:set-secret_secret_here)
 
 (push #p"APPDIR" asdf:*central-registry*)
 
