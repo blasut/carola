@@ -1,7 +1,9 @@
 (defpackage #:carola
   (:use #:cl
         #:drakma)
-  (:export :make-currency
+  (:export :set-api-key
+           :set-secret
+           :make-currency
            :make-currency-pair
            :get-all-order-books
            :get-balances

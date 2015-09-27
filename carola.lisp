@@ -14,11 +14,21 @@
     (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
     (json:decode-json stream)))
 
+(defparameter *secret* "")
+
+(defun set-secret (secret)
+  (setf *secret* secret))
+
 (defun secret ()
-  (osicat:environment-variable "api_secret"))
+  *secret*)
+
+(defparameter *api-key* "")
+
+(defun set-api-key (key)
+  (setf *api-key* key))
 
 (defun api-key ()
-  (osicat:environment-variable "api_key"))
+  *api-key*)
 
 (defun sign-request (params)
   (let* ((params (drakma:alist-to-url-encoded-string params :ascii 'drakma:url-encode))
